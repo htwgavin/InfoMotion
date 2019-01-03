@@ -39,9 +39,10 @@ public class MouseController : MonoBehaviour {
 				if (handPosition.x < 0) handPosition.x = 0;
 				if (handPosition.x > 200) handPosition.x = 200;
 
-				// handPosition y von 0 - 200
-				if (handPosition.y < 0) handPosition.y = 0;
-				if (handPosition.y > 200) handPosition.y = 200;
+				// handPosition y von 50 - 250
+				if (handPosition.y < 50) handPosition.y = 50;
+				if (handPosition.y > 250) handPosition.y = 250;
+				handPosition.y -= 50;
 
 				// relative Position der Koordinaten berechnen
 				float relPositionX = ((float)handPosition.x) / leapCordSystemCap;
