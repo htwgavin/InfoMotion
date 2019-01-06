@@ -13,6 +13,7 @@ public class MouseController : MonoBehaviour {
 	private int canvasWidth, canvasHeight;
 
 	private bool clickGestureActive = false;
+	private bool grabGestureActive = false;
 
 	private const int leapCordSystemCap = 200;
 
@@ -67,9 +68,18 @@ public class MouseController : MonoBehaviour {
 		if (frame.Hands.Count == 1) {
 			// Steuerung des Cursors
 			foreach (Hand hand in frame.Hands) {
+
+				// Click-Gesture
 				if (clickGesture(hand)) {
 					Debug.Log ("Click!");
-				}
+					break;
+				} 
+
+				// Pinch-Gesture
+				if (grabGesture(hand)) {
+					Debug.Log ("Grab!");
+					break;
+				} 
 
 				// Palm Position holen (x,y,z)
 				handPosition.x = Mathf.RoundToInt (hand.PalmPosition.x);
@@ -106,6 +116,7 @@ public class MouseController : MonoBehaviour {
 		}
 	}
 
+	// Returns true at the start of the gesture
 	bool clickGesture (Hand h) {
 		FingerList fingers = h.Fingers;
 
@@ -113,53 +124,61 @@ public class MouseController : MonoBehaviour {
 		if (fingers.Count > 1) { 
 
 			// Position von Daumen & Zeigefinger holen (wenn sie gestreckt sind)
-			float thumbPositionX = 0.0f, indexPositionX = 0.0f;
+			Vector3 thumbDirection = Vector3.zero;
+			Vector3 indexDirection = Vector3.zero;
+			bool thumbShown = false, indexShown = false;
+
 			foreach (Finger f in fingers) {
 
 				// Daumen
 				if (f.Type == Finger.FingerType.TYPE_THUMB) {
-					if (f.IsExtended) {
-						thumbPositionX = f.TipPosition.x;
-					} else {
-						clickGestureActive = false;
-						return false;
-					}
+					thumbDirection = new Vector3 (f.Direction.x, f.Direction.y, f.Direction.z);
+					thumbShown = true;
 				} 
 
 				// Zeigefinger
 				if (f.Type == Finger.FingerType.TYPE_INDEX) {
-					if (f.IsExtended) {
-						indexPositionX = f.TipPosition.x;
-					} else {
-						clickGestureActive = false;
-						return false;
-					}
+					indexDirection = new Vector3 (f.Direction.x, f.Direction.y, f.Direction.z);
+					indexShown = true;
 				}
 			}
+				
+			if (thumbShown && indexShown) {
+				// wenn Skalarprodukt > 0.9, dann sind die Richtungsvektoren ähnlich genug
+				float dotProduct = Vector3.Dot (thumbDirection, indexDirection);
+				float limit = 0.9f;
 
-			// Daumen & Zeigefinger sichtbar? 
-			if (thumbPositionX == 0.0f || indexPositionX == 0.0f) {
+				if (dotProduct > limit && !clickGestureActive) {
+					clickGestureActive = true;
+					return true;
+				} else if (dotProduct <= limit && clickGestureActive) {
+					clickGestureActive = false;
+					return false;
+				} else {
+					return false;
+				}
+			} else {
 				return false;
 			}
-
-			// Abstand zwischen den Fingern berechnen
-			float delta = thumbPositionX - indexPositionX;
-
-			if (Mathf.Abs (delta) < 20.0f && !clickGestureActive) {
-				clickGestureActive = true;
-				return true;
-			} 
-
-			if (Mathf.Abs (delta) > 20.0f && clickGestureActive){
-				clickGestureActive = false;
-				return false;
-			}
-
-			// Default-Wert
-			return false;
 
 		} else {
 			clickGestureActive = false;
+			return false;
+		}
+	}
+
+	// Returns true at the start of the gesture
+	bool grabGesture (Hand h) {
+		float grabStrength = h.GrabStrength;
+		float limit = 0.9f;
+
+		if (grabStrength > limit && !grabGestureActive) {
+			grabGestureActive = true;
+			return true;
+		} else if (grabStrength < limit && grabGestureActive) {
+			grabGestureActive = false;
+			return false;
+		} else {
 			return false;
 		}
 	}
