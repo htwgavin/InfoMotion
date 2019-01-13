@@ -3,17 +3,29 @@ using System.Collections.Generic;
 using UnityEngine;
 using Leap;
 using Leap.Util;
+namespace SwipeMenu {
 
 public class MouseController : MonoBehaviour {
 
 	public GameObject canvas;
 	public HandController hc;
+	public GameObject scriptManager;
+	private panelScript pS;
+
+	// Menus
+	public GameObject mainMenu;
+	public GameObject musicMenu;
+	public GameObject navigationMenu;
+	public GameObject giveControlMenu;
+	public GameObject takeControlMenu;
 
 	private Vector2Int handPosition;
 	private int canvasWidth, canvasHeight;
 
 	private bool clickGestureActive = false;
 	private bool grabGestureActive = false;
+
+	public bool requireMenuItemToBeCentredForSelectiion = true;
 
 	private const int leapCordSystemCap = 200;
 
@@ -22,13 +34,16 @@ public class MouseController : MonoBehaviour {
 		
 		// Gesten aktivieren
 		hc.GetLeapController().EnableGesture(Gesture.GestureType.TYPESWIPE);
-		hc.GetLeapController ().EnableGesture (Gesture.GestureType.TYPESCREENTAP);
+		hc.GetLeapController().EnableGesture (Gesture.GestureType.TYPESCREENTAP);
 
 		// Breite & Höhe des Fensters
 		var rect = canvas.transform as RectTransform;
 		canvasWidth = Mathf.RoundToInt (rect.rect.width);
 		canvasHeight = Mathf.RoundToInt (rect.rect.height);
 		Debug.Log ("canvas width: " + rect.rect.width + "; canvas height: " + rect.rect.height);
+
+		// ScriptManager
+		pS = scriptManager.GetComponent<panelScript>();
 	}
 	
 	// Update is called once per frame
@@ -39,30 +54,24 @@ public class MouseController : MonoBehaviour {
 		// Gesten
 		foreach (Gesture g in gestures) {
 			// Swipe Geste
-			if (g.Type == Gesture.GestureType.TYPESWIPE) {
+				if (g.Type == Gesture.GestureType.TYPESWIPE) {
 				SwipeGesture swipeGesture = new SwipeGesture (g);
 				Vector swipeDirection = swipeGesture.Direction;
 
-				if (Mathf.Abs (swipeDirection.x) > Mathf.Abs (swipeDirection.y)) {
-					if (swipeDirection.x < 0) {
-						Debug.Log ("Links");
-					} else if (swipeDirection.x > 0) {
-						Debug.Log ("Rechts");
-					}
-				} else if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
+				if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
 					if (swipeDirection.y < 0) {
-						Debug.Log ("Runter");
+						// Debug.Log ("Runter");
+						if (!navigationMenu.activeInHierarchy) {
+							pS.showhideNavigationPanel();
+						}
 					} else if (swipeDirection.y > 0) {
-						Debug.Log ("Hoch");
+						// Debug.Log ("Hoch");
+						if (navigationMenu.activeInHierarchy) {
+							pS.showhideNavigationPanel();
+						}
 					}
 				}
-			}
-
-			// Tap Geste
-			if (g.Type == Gesture.GestureType.TYPESCREENTAP) {
-				Debug.Log (g.Type); 
-			}
-
+			} 
 		}
 
 		if (frame.Hands.Count == 1) {
@@ -71,13 +80,17 @@ public class MouseController : MonoBehaviour {
 
 				// Click-Gesture
 				if (clickGesture(hand)) {
-					Debug.Log ("Click!");
+					//Debug.Log ("Click!");
+					checkTouch(transform.position);
 					break;
 				} 
 
-				// Pinch-Gesture
+				// Grab-Gesture
 				if (grabGesture(hand)) {
-					Debug.Log ("Grab!");
+					// Debug.Log ("Grab!");
+					if (!mainMenu.activeInHierarchy && musicMenu.activeInHierarchy) {
+						pS.showhideMusicPanel ();
+					}
 					break;
 				} 
 
@@ -146,7 +159,7 @@ public class MouseController : MonoBehaviour {
 			if (thumbShown && indexShown) {
 				// wenn Skalarprodukt > 0.9, dann sind die Richtungsvektoren ähnlich genug
 				float dotProduct = Vector3.Dot (thumbDirection, indexDirection);
-				float limit = 0.9f;
+				float limit = 0.95f;
 
 				if (dotProduct > limit && !clickGestureActive) {
 					clickGestureActive = true;
@@ -170,7 +183,7 @@ public class MouseController : MonoBehaviour {
 	// Returns true at the start of the gesture
 	bool grabGesture (Hand h) {
 		float grabStrength = h.GrabStrength;
-		float limit = 0.9f;
+		float limit = 0.90f;
 
 		if (grabStrength > limit && !grabGestureActive) {
 			grabGestureActive = true;
@@ -182,4 +195,30 @@ public class MouseController : MonoBehaviour {
 			return false;
 		}
 	}
+
+	private void checkTouch(Vector3 screenPoint) {
+		Ray touchRay = Camera.main.ScreenPointToRay(screenPoint);
+		RaycastHit hit;
+
+		Physics.Raycast(touchRay, out hit);
+
+		if (hit.collider != null && hit.collider.gameObject.CompareTag ("MenuItem")) {
+			var item = hit.collider.GetComponent<MenuItem> ();
+
+			if (Menu.instance.MenuCentred (item)) {
+				// Musik wird abgespielt
+				Menu.instance.ActivateSelectedMenuItem (item);
+			} else {
+				Menu.instance.AnimateToTargetItem (item);
+
+				if (!requireMenuItemToBeCentredForSelectiion) {
+					Menu.instance.ActivateSelectedMenuItem (item);
+				}
+			}
+		} else if (hit.collider != null && hit.collider.gameObject.CompareTag ("Button")) {
+			// not working 
+		}
+
+	}
+}
 }
