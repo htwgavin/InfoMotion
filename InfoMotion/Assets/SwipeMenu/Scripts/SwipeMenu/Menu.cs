@@ -12,8 +12,6 @@ namespace SwipeMenu
 	{
 		// Leap Motion variables
 		public HandController hc;
-		private bool swipeLeft = false;
-		private bool swipeRight = false;
 
         SwipeMenuAudioPlayer swipeMenuAudioPlayer = new SwipeMenuAudioPlayer();
 		/// <summary>
@@ -109,11 +107,6 @@ namespace SwipeMenu
 			Frame frame = hc.GetFrame ();
 			GestureList gestures = frame.Gestures ();
 
-			if (gestures.IsEmpty) {
-				swipeLeft = false;
-				swipeRight = false;
-			}
-
 			foreach (Gesture g in gestures) {
 				// Swipe Geste
 				if (g.Type == Gesture.GestureType.TYPESWIPE) {
@@ -124,12 +117,10 @@ namespace SwipeMenu
 						if (Mathf.Abs (swipeDirection.x) > Mathf.Abs (swipeDirection.y)) {
 							if (swipeDirection.x < 0) {
 								Debug.Log ("Links");
-								swipeLeft = true;
-								swipeRight = false;
+								MoveLeftRightByAmount (-1);
 							} else if (swipeDirection.x > 0) {
 								Debug.Log ("Rechts");
-								swipeLeft = false;
-								swipeRight = true;
+								MoveLeftRightByAmount (1);
 							}
 						}
 					}
@@ -141,29 +132,18 @@ namespace SwipeMenu
 
             // hier musst du die leap einbauen
 
-			if (Input.GetKeyDown("right") || swipeRight)
-            {
-
-                if(_currentMenuPosition < _EndeVomMenu)
-                { _currentMenuPosition = _currentMenuPosition + _switchProKlick;
-                }
-
-                else 
-                {
+			if (Input.GetKeyDown("right")) {
+				if(_currentMenuPosition < _EndeVomMenu) {
+					_currentMenuPosition = _currentMenuPosition + _switchProKlick;
+                } else {
                     _currentMenuPosition = _anfangVomMenu;
                 }
             }
 
-			if (Input.GetKeyDown("left") || swipeLeft)
-            {
-
-                if (_currentMenuPosition > _anfangVomMenu)
-                {
+			if (Input.GetKeyDown("left")) {
+				if (_currentMenuPosition > _anfangVomMenu) {
                     _currentMenuPosition = _currentMenuPosition - _switchProKlick;
-                }
-
-                else
-                {
+                } else {
                     _currentMenuPosition = _EndeVomMenu;
                 }
             }
