@@ -15,19 +15,25 @@ namespace SwipeMenu {
 
 		// Menus
 		public GameObject mainMenu;
+		private List<Button> mainButtons = new List<Button>();
+
 		public GameObject musicMenu;
+		public GameObject[] musicObj;
+
 		public GameObject navigationMenu;
+		public GameObject[] navigationObj;
+
+		public GameObject toggleMenu;
 		public GameObject giveControlMenu;
 		public GameObject takeControlMenu;
-
-		// Buttons
-		private List<Button> buttons = new List<Button>();
 
 		private Vector2Int handPosition;
 		private int canvasWidth, canvasHeight;
 
 		private bool clickGestureActive = false;
 		private bool grabGestureActive = false;
+
+		private bool automaticDrivingActive = true;
 
 		public bool requireMenuItemToBeCentredForSelectiion = true;
 
@@ -50,40 +56,40 @@ namespace SwipeMenu {
 			pS = scriptManager.GetComponent<panelScript>();
 
 			// alle Buttons holen aus dem MainMenu
-			GameObject[] btns = GameObject.FindGameObjectsWithTag("Button");
+			GameObject[] btns = GameObject.FindGameObjectsWithTag("MainButton");
 			foreach (GameObject obj in btns) {
-				buttons.Add (obj.GetComponent<Button>());
+				mainButtons.Add (obj.GetComponent<Button>());
 			}
-			Debug.Log (buttons.Count);
-
 		}
 		
 		// Update is called once per frame
 		void Update () {
 			Frame frame = hc.GetFrame ();
-			GestureList gestures = frame.Gestures ();
 
-			// Gesten
-			foreach (Gesture g in gestures) {
-				// Swipe Geste
+			if (!giveControlMenu.activeInHierarchy && !takeControlMenu.activeInHierarchy) {
+				// Gesten
+				GestureList gestures = frame.Gestures ();
+				foreach (Gesture g in gestures) {
+					// Swipe Geste
 					if (g.Type == Gesture.GestureType.TYPESWIPE) {
-					SwipeGesture swipeGesture = new SwipeGesture (g);
-					Vector swipeDirection = swipeGesture.Direction;
+						SwipeGesture swipeGesture = new SwipeGesture (g);
+						Vector swipeDirection = swipeGesture.Direction;
 
-					if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
-						if (swipeDirection.y < 0) {
-							// Debug.Log ("Runter");
-							if (!navigationMenu.activeInHierarchy) {
-								pS.showhideNavigationPanel();
-							}
-						} else if (swipeDirection.y > 0) {
-							// Debug.Log ("Hoch");
-							if (navigationMenu.activeInHierarchy) {
-								pS.showhideNavigationPanel();
+						if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
+							if (swipeDirection.y < 0) {
+								// Debug.Log ("Runter");
+								if (!navigationMenu.activeInHierarchy && automaticDrivingActive) {
+									pS.showhideNavigationPanel ();
+								}
+							} else if (swipeDirection.y > 0) {
+								// Debug.Log ("Hoch");
+								if (navigationMenu.activeInHierarchy) {
+									pS.showhideNavigationPanel ();
+								}
 							}
 						}
-					}
-				} 
+					} 
+				}
 			}
 
 			if (frame.Hands.Count == 1) {
@@ -93,7 +99,7 @@ namespace SwipeMenu {
 					// Click-Gesture
 					if (clickGesture(hand)) {
 						//Debug.Log ("Click!");
-						checkTouch(transform.position);
+						checkTouch (transform.position);
 						clickedButton (transform.position);
 						break;
 					} 
@@ -201,7 +207,6 @@ namespace SwipeMenu {
 			FingerList fingers = h.Fingers;
 
 			if (grabStrength > limit && !grabGestureActive && h.PalmNormal.y < direction) {
-				Debug.Log (h.PalmNormal.y);
 				grabGestureActive = true;
 				return true;
 			} else if (grabStrength < limit && grabGestureActive) {
@@ -235,12 +240,42 @@ namespace SwipeMenu {
 		}
 
 		private void clickedButton (Vector3 screenPoint) {
-			foreach (Button b in buttons) {
-				Collider2D collider = b.GetComponent<Collider2D>();
-				if (collider.bounds.Contains (screenPoint)) {
-					b.onClick.Invoke();
+			if (!giveControlMenu.activeInHierarchy && !takeControlMenu.activeInHierarchy) {
+				if (mainMenu.activeInHierarchy) {
+					// Check if button is pressed
+					foreach (Button b in mainButtons) {
+						Collider2D buttonCollider = b.GetComponent<Collider2D> ();
+						if (buttonCollider != null && buttonCollider.bounds.Contains (screenPoint) && b.interactable) {
+							b.onClick.Invoke ();
+							return;
+						}
+					}
+
+					// Check if drive toggle is pressed
+					Collider2D toggleCollider = toggleMenu.GetComponent<Collider2D> ();
+					if (toggleCollider != null && toggleCollider.bounds.Contains (screenPoint)) {
+						Toggle temp = toggleMenu.GetComponent<Toggle> ();
+						temp.isOn = !temp.isOn; 
+						return;
+					}
 				}
-			}
+
+				if (navigationMenu.activeInHierarchy) {
+					// Problem: unterschiedliche Koordinatensysteme
+				}
+			} else if (giveControlMenu.activeInHierarchy || takeControlMenu.activeInHierarchy) {
+				GameObject temp = GameObject.FindGameObjectWithTag ("okButton");
+				Button b = temp.GetComponent<Button> ();
+				if (b != null) {
+					Collider2D controlCollider = b.GetComponent<Collider2D> ();
+					if (controlCollider != null && controlCollider.bounds.Contains (screenPoint)) {
+						automaticDrivingActive = !automaticDrivingActive;
+						b.onClick.Invoke ();
+					}
+				}
+			} 
+
+
 		}
 	}
 }

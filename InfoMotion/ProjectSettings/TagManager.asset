@@ -6,6 +6,12 @@ TagManager:
   tags:
   - MenuItem
   - Button
+  - NavigationButton
+  - MainButton
+  - MusicButton
+  - RadioButton
+  - MoviesButton
+  - okButton
   layers:
   - Default
   - TransparentFX
