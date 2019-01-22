@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class panelScript : MonoBehaviour
@@ -134,5 +135,9 @@ public class panelScript : MonoBehaviour
         MusicPanel.SetActive(!MusicPanel.activeSelf);
 
     }
+
+	public void loadGameScene() {
+		SceneManager.LoadScene (2, LoadSceneMode.Single);
+	}
 
 }
