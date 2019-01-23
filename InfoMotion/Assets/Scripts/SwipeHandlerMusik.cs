@@ -6,7 +6,7 @@ namespace SwipeMenu
     /// <summary>
     /// Handles swiping and flicking. Includes mouse and mobile support.
     /// </summary>
-    public class SwpieHandlerMusik : MonoBehaviour
+    public class SwipeHandlerMusik : MonoBehaviour
     {
         /// <summary>
         /// If true, swipes will be handled.

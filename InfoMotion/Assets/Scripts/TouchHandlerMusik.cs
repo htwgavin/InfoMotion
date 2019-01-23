@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+
 namespace SwipeMenu
 {
     
@@ -10,7 +11,7 @@ namespace SwipeMenu
     /// a menu item is centred than its <see cref="MenuItem.OnClick"/> is invoked.
     /// </summary>
     /// 
-public class TouchHandlerMusik : MonoBehaviour {
+	public class TouchHandlerMusik : MonoBehaviour {
 
         /// <summary>
         /// If true, menu selection is handled.
@@ -22,11 +23,11 @@ public class TouchHandlerMusik : MonoBehaviour {
         /// </summary>
         public bool requireMenuItemToBeCentredForSelectiion = true;
 
-        private SwipeHandler _swipeHandler;
+        private SwipeHandlerMusik _swipeHandler;
 
         void Start()
         {
-            _swipeHandler = GetComponent<SwipeHandler>();
+			_swipeHandler = GetComponent<SwipeHandlerMusik>();
         }
 
         void LateUpdate()
@@ -42,11 +43,10 @@ public class TouchHandlerMusik : MonoBehaviour {
             if (Input.GetMouseButtonUp(0) && Helper.GetMouseAxis(MouseAxis.x) == 0)
             {
                 CheckTouch(Input.mousePosition);
-                print("up arrow key is held down");
             }
         }
 
-        private void CheckTouch(Vector3 screenPoint)
+		public void CheckTouch(Vector3 screenPoint)
         {
             Ray touchRay = Camera.main.ScreenPointToRay(screenPoint);
             RaycastHit hit;
@@ -62,10 +62,9 @@ public class TouchHandlerMusik : MonoBehaviour {
                 {
 
                     Menu.instance.ActivateSelectedMenuItem(item);
-                    print("musik wird abgespielt ");
 
                 }
-                else
+                /* else
                 {
                     Menu.instance.AnimateToTargetItem(item);
 
@@ -74,6 +73,7 @@ public class TouchHandlerMusik : MonoBehaviour {
                         Menu.instance.ActivateSelectedMenuItem(item);
                     }
                 }
+                */
             }
         }
 

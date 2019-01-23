@@ -4,8 +4,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using Leap;
 using Leap.Util;
-namespace SwipeMenu {
 
+namespace SwipeMenu {
+	
 	public class MouseController : MonoBehaviour {
 
 		public GameObject canvas;
@@ -17,11 +18,21 @@ namespace SwipeMenu {
 		public GameObject mainMenu;
 		private List<Button> mainButtons = new List<Button>();
 
+		// Music
+		public GameObject musicPanel;
 		public GameObject musicMenu;
-		public GameObject[] musicObj;
 
+		// Movie
+		public GameObject moviePanel;
+		public GameObject movieMenu;
+
+		// Radio
+		public GameObject radioPanel;
+		public GameObject radioMenu;
+
+		// Navigation 
+		public GameObject navigationPanel;
 		public GameObject navigationMenu;
-		public GameObject[] navigationObj;
 
 		public GameObject toggleMenu;
 		public GameObject giveControlMenu;
@@ -34,8 +45,6 @@ namespace SwipeMenu {
 		private bool grabGestureActive = false;
 
 		private bool automaticDrivingActive = true;
-
-		public bool requireMenuItemToBeCentredForSelectiion = true;
 
 		private const int leapCordSystemCap = 200;
 
@@ -78,12 +87,12 @@ namespace SwipeMenu {
 						if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
 							if (swipeDirection.y < 0) {
 								// Debug.Log ("Runter");
-								if (!navigationMenu.activeInHierarchy && automaticDrivingActive) {
+								if (!navigationPanel.activeInHierarchy && automaticDrivingActive) {
 									pS.showhideNavigationPanel ();
 								}
 							} else if (swipeDirection.y > 0) {
 								// Debug.Log ("Hoch");
-								if (navigationMenu.activeInHierarchy) {
+								if (navigationPanel.activeInHierarchy) {
 									pS.showhideNavigationPanel ();
 								}
 							}
@@ -99,16 +108,34 @@ namespace SwipeMenu {
 					// Click-Gesture
 					if (clickGesture(hand)) {
 						//Debug.Log ("Click!");
-						checkTouch (transform.position);
-						clickedButton (transform.position);
+						if (mainMenu.activeInHierarchy) {
+							clickedButton (transform.position);
+						}
+
+						if (musicPanel.activeInHierarchy) {
+							musicMenu.GetComponent<TouchHandlerMusik> ().CheckTouch (transform.position);
+						} else if (navigationPanel.activeInHierarchy) {
+							navigationMenu.GetComponent<TouchHandlerMusik> ().CheckTouch (transform.position);
+						} else if (moviePanel.activeInHierarchy) {
+							movieMenu.GetComponent<TouchHandlerMusik> ().CheckTouch (transform.position);
+						} else if (radioPanel.activeInHierarchy) {
+							radioMenu.GetComponent<TouchHandlerMusik> ().CheckTouch (transform.position);
+						}
+
 						break;
 					} 
 
 					// Grab-Gesture
 					if (grabGesture(hand)) {
 						// Debug.Log ("Grab!");
-						if (!mainMenu.activeInHierarchy && musicMenu.activeInHierarchy) {
-							pS.showhideMusicPanel ();
+						if (!mainMenu.activeInHierarchy) {
+							if (musicPanel.activeInHierarchy) {
+								pS.showhideMusicPanel ();
+							} else if (radioPanel.activeInHierarchy) {
+								pS.showhideRadioPanel ();
+							} else if (moviePanel.activeInHierarchy) {
+								pS.showhideMoviesPanel ();
+							}
 						}
 						break;
 					} 
@@ -216,29 +243,7 @@ namespace SwipeMenu {
 				return false;
 			}
 		}
-
-		private void checkTouch (Vector3 screenPoint) {
-			Ray touchRay = Camera.main.ScreenPointToRay(screenPoint);
-			RaycastHit hit;
-
-			Physics.Raycast(touchRay, out hit);
-
-			if (hit.collider != null && hit.collider.gameObject.CompareTag ("MenuItem")) {
-				var item = hit.collider.GetComponent<MenuItem> ();
-
-				if (Menu.instance.MenuCentred (item)) {
-					// Musik wird abgespielt
-					Menu.instance.ActivateSelectedMenuItem (item);
-				} else {
-					Menu.instance.AnimateToTargetItem (item);
-
-					if (!requireMenuItemToBeCentredForSelectiion) {
-						Menu.instance.ActivateSelectedMenuItem (item);
-					}
-				}
-			} 
-		}
-
+			
 		private void clickedButton (Vector3 screenPoint) {
 			if (!giveControlMenu.activeInHierarchy && !takeControlMenu.activeInHierarchy) {
 				if (mainMenu.activeInHierarchy) {
@@ -259,10 +264,6 @@ namespace SwipeMenu {
 						return;
 					}
 				}
-
-				if (navigationMenu.activeInHierarchy) {
-					// Problem: unterschiedliche Koordinatensysteme
-				}
 			} else if (giveControlMenu.activeInHierarchy || takeControlMenu.activeInHierarchy) {
 				GameObject temp = GameObject.FindGameObjectWithTag ("okButton");
 				Button b = temp.GetComponent<Button> ();
@@ -274,8 +275,6 @@ namespace SwipeMenu {
 					}
 				}
 			} 
-
-
 		}
 	}
 }

@@ -20,6 +20,8 @@ public class panelScript : MonoBehaviour
     public Transform ButtonDownThePanel;
 
     public GameObject MusicPanel;
+	public GameObject RadioPanel;
+	public GameObject MoviesPanel;
     public GameObject MainEverything;
 
     // public float sss;
@@ -128,13 +130,24 @@ public class panelScript : MonoBehaviour
     }
 
 
-    public void showhideMusicPanel()
-    {
-        MainEverything.SetActive(!MainEverything.activeSelf);
+	public void showhideMusicPanel() {
+		MainEverything.SetActive (!MainEverything.activeSelf);
+		MusicPanel.SetActive (!MusicPanel.activeSelf);
+	}
 
-        MusicPanel.SetActive(!MusicPanel.activeSelf);
+	public void showhideRadioPanel() {
+		MainEverything.SetActive (!MainEverything.activeSelf);
+		RadioPanel.SetActive (!RadioPanel.activeSelf);
+	}
 
-    }
+	public void showhideMoviesPanel() {
+		MainEverything.SetActive (!MainEverything.activeSelf);
+		MoviesPanel.SetActive (!MoviesPanel.activeSelf);
+	}
+
+	public void showhideNavApp(){
+		Debug.Log ("Navigation");
+	}
 
 	public void loadGameScene() {
 		SceneManager.LoadScene (2, LoadSceneMode.Single);
