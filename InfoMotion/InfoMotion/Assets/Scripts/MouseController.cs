@@ -24,6 +24,8 @@ public class MouseController : MonoBehaviour {
 	public GameObject radioPanel;
 	public GameObject navigationPanel;
 
+	public Button gamesButton;
+
 	// Movies
 	public GameObject movieOne;
 	public GameObject movieTwo;
@@ -81,7 +83,7 @@ public class MouseController : MonoBehaviour {
 					if (Mathf.Abs (swipeDirection.x) < Mathf.Abs (swipeDirection.y)) {
 						if (swipeDirection.y < 0) {
 							// Debug.Log ("Runter");
-							if (!navigationPanel.activeInHierarchy && automaticDrivingActive) {
+							if (!navigationPanel.activeInHierarchy && gamesButton.interactable == true) {
 								pS.showhideNavigationPanel ();
 							}
 						} else if (swipeDirection.y > 0) {

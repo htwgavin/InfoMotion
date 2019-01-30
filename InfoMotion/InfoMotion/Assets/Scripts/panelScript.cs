@@ -73,6 +73,13 @@ public class panelScript : MonoBehaviour
             ButtonDownThePanel.GetComponent<Button>().interactable = false;
             TakeControlPanel.SetActive(false);
 
+			MainEverything.SetActive (true);
+			MusicPanel.SetActive (false);
+			RadioPanel.SetActive (false);
+			MoviesPanel.SetActive (false);
+			Movies1.SetActive (false);
+			Movies2.SetActive (false);
+
             checkIfScrollPanelAktive();
 
         }

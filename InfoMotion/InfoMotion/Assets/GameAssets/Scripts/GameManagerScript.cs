@@ -26,6 +26,10 @@ public class GameManagerScript : MonoBehaviour {
 				} 
 			}
 		}
+
+		if (Input.GetKeyDown(KeyCode.Space)) {
+			SceneManager.LoadScene (1, LoadSceneMode.Single);
+		}
 	}
 
 	// Methode wird aufgerufen, wenn das Spiel beendet wurde.
